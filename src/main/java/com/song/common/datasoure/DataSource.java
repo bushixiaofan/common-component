@@ -1,4 +1,4 @@
-package com.song.common.datasoure.annotation;
+package com.song.common.datasoure;
 
 import java.lang.annotation.*;
 

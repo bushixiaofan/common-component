@@ -1,4 +1,4 @@
-package com.song.common.datasoure.utils;
+package com.song.common.datasoure;
 
 /**
  * data source holder

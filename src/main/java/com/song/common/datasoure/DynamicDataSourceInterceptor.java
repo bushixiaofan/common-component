@@ -1,13 +1,10 @@
 package com.song.common.datasoure;
 
-import com.song.common.datasoure.annotation.DataSource;
-import com.song.common.datasoure.utils.DataSourceHolder;
 import com.song.common.utils.RandomUtils;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 
-import java.lang.annotation.Annotation;
-import java.util.Properties;
+import java.util.Set;
 
 /**
  * dynamic data source interceptor
@@ -16,7 +13,7 @@ public class DynamicDataSourceInterceptor implements MethodInterceptor{
 
     private DynamicDataSourceKey dataSourceKey = null;
 
-    private  Properties attributes = null;
+    private Set<String> attributes = null;
 
     public Object invoke(MethodInvocation methodInvocation) throws Throwable {
 
@@ -26,8 +23,8 @@ public class DynamicDataSourceInterceptor implements MethodInterceptor{
             DataSourceHolder.setDataSource(dataSource.value());
         } else { // set data source by method name
             if (attributes != null && attributes.size() != 0) {
-                for (String name : attributes.stringPropertyNames()) {
-                    if (methodInvocation.getMethod().getName().contains(name)) {
+                for (String name : attributes) {
+                    if (methodInvocation.getMethod().getName().matches(name)) {
                         setReadDataSource();
                     } else {
                         setWriteDataSource();
@@ -65,11 +62,11 @@ public class DynamicDataSourceInterceptor implements MethodInterceptor{
         this.dataSourceKey = dataSourceKey;
     }
 
-    public Properties getAttributes() {
+    public Set<String> getAttributes() {
         return attributes;
     }
 
-    public void setAttributes(Properties attributes) {
+    public void setAttributes(Set<String> attributes) {
         this.attributes = attributes;
     }
 }

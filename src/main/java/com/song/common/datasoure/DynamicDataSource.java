@@ -1,6 +1,5 @@
 package com.song.common.datasoure;
 
-import com.song.common.datasoure.utils.DataSourceHolder;
 import org.springframework.jdbc.datasource.lookup.AbstractRoutingDataSource;
 
 /**
