@@ -14,7 +14,7 @@ import org.springframework.util.CollectionUtils;
  * @date 2017年8月14日
  *
  */
-public class RedisCacheManager {
+public class RedisManager {
 
     private RedisTemplate<String, Object> redisTemplate;
 

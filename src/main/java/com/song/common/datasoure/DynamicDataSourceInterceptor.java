@@ -72,7 +72,7 @@ public class DynamicDataSourceInterceptor implements MethodInterceptor{
         }
     }
 
-    private boolean isMatch(String methodName, String mappedName) {
+    private boolean isMatch(String mappedName, String methodName) {
         return PatternMatchUtils.simpleMatch(mappedName, methodName);
     }
 

@@ -2,8 +2,8 @@ package com.song.common.idempotent;
 
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Maps;
-import com.qunar.mobile.car.idempotent.api.annotation.IdempotentIgnoreParam;
-import com.song.common.cache.RedisCacheManager;
+import com.song.common.cache.RedisManager;
+import com.song.common.utils.JsonUtil;
 import com.song.common.utils.MD5Utils;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
@@ -26,7 +26,7 @@ import java.util.Map;
  */
 public class IdempotentInterceptor implements MethodInterceptor {
 
-    private RedisCacheManager redisCacheManager;
+    private RedisManager redisManager;
 
 
     @Override
@@ -38,13 +38,14 @@ public class IdempotentInterceptor implements MethodInterceptor {
             HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
 
             String md5Str = "idempotent: " + getURL(request) + getRequestParams(invocation);
-            if (redisCacheManager.hasKey(md5Str)) {
+            Class aClass = invocation.getMethod().getReturnType();
+            if (redisManager.hasKey(md5Str)) {
                 // 已请求过，直接返回上次请求结果
-                return redisCacheManager.get(md5Str);
+                return JsonUtil.fromJson((String) redisManager.get(md5Str), aClass);
             } else {
                 // 首次请求，将请求参数，请求处理结果写入redis
                 Object result = invocation.proceed();
-                redisCacheManager.set(md5Str, request, expire);
+                redisManager.set(md5Str, JsonUtil.toJson(result), expire);
                 return result;
             }
         }
@@ -81,7 +82,7 @@ public class IdempotentInterceptor implements MethodInterceptor {
             RequestParam requestParam = param.getParameterAnnotation(RequestParam.class);
             if (requestParam != null) {
                 String paraName = requestParam.value();
-                IdempotentIgnoreParam idempotentIgnoreParam = param.getParameterAnnotation(IdempotentIgnoreParam.class);
+                IdempotentIgnore idempotentIgnoreParam = param.getParameterAnnotation(IdempotentIgnore.class);
                 if (idempotentIgnoreParam == null) {
                     // 添加未标注@IdempotentIgnoreParam的参数
                     requestParams.put(paraName, curArg);
@@ -108,7 +109,7 @@ public class IdempotentInterceptor implements MethodInterceptor {
                         if (Modifier.isStatic(modifiers)) {
                             return false;
                         } else {
-                            return !field.isAnnotationPresent(IdempotentIgnoreParam.class);
+                            return !field.isAnnotationPresent(IdempotentIgnore.class);
                         }
                     }
                 });
@@ -122,11 +123,11 @@ public class IdempotentInterceptor implements MethodInterceptor {
         }
     }
 
-    public RedisCacheManager getRedisCacheManager() {
-        return redisCacheManager;
+    public RedisManager getRedisManager() {
+        return redisManager;
     }
 
-    public void setRedisCacheManager(RedisCacheManager redisCacheManager) {
-        this.redisCacheManager = redisCacheManager;
+    public void setRedisManager(RedisManager redisManager) {
+        this.redisManager = redisManager;
     }
 }
